@@ -1,5 +1,4 @@
-#!/home/n-z/noberg/miniconda2/bin/python
-#TODO: fix the above
+#!python
 
 import sys
 import os
@@ -26,7 +25,6 @@ cyimage.load_and_style(ssn_path=args.ssn, do_style=True)
 
 cyimage.export_image(image_path=args.image_base)
 
-
-
+cyimage.quit()
 
 

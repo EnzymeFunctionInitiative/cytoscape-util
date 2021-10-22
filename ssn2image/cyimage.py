@@ -3,6 +3,8 @@ import py4cytoscape as py4
 import time
 import urllib.error
 import requests.exceptions
+import os
+import os.path
 #from requests.exceptions import ConnectionError
 
 
@@ -115,9 +117,11 @@ class CyImage:
             if self.verbose:
                 print("Applying default styles")
             #defaults = {"NODE_SHAPE": "ELLIPSE", "NODE_SIZE": 10, 
+            node_ids = list(py4.get_table_columns(columns='name', base_url=self.url).index)
+            py4.set_node_label_bypass(node_ids, "", base_url=self.url)
             py4.set_node_border_width_default(new_width=0, base_url=self.url)
             py4.set_node_label_default(new_label="", base_url=self.url)
-            py4.clear_node_property_bypass(None, "NODE_LABEL")
+            #py4.clear_node_property_bypass(node_ids, "NODE_LABEL", base_url=self.url)
             py4.set_node_shape_default(new_shape="ELLIPSE", base_url=self.url)
             py4.set_node_size_default(new_size=10, base_url=self.url)
             py4.set_edge_line_width_default(new_width=1, base_url=self.url)
@@ -179,6 +183,9 @@ class CyImage:
         try:
             if self.verbose:
                 print("Trying to export to " + image_path)
+            if os.path.exists(image_path):
+                print("Removing " + image_path + " first")
+                os.remove(image_path)
             py4.export_image(filename=image_path, type="PNG", height=1600, width=2000, base_url=self.url)
             if self.verbose:
                 print("Succesfully exported image")
@@ -186,6 +193,17 @@ class CyImage:
             if self.verbose:
                 print("Failed to export image to " + image_path)
             return False
+        return True
+
+    def quit(self):
+        try:
+            if self.verbose:
+                print("Quitting")
+            py4.command_quit(base_url=self.url)
+        except py4.CyError as ce:
+            if self.verbose:
+                print("Failed to quit")
+                return False
         return True
 
 
