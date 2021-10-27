@@ -38,6 +38,11 @@ class CyImage:
                     if self.verbose:
                         print("An HTTP error occurred")
                     return False
+            except requests.exceptions.HTTPError as he:
+                if self.verbose:
+                    print("Waiting 20s for the REST service to start")
+                # Wait for REST service to start up
+                time.sleep(20)
             #except Exception as e:
             #    template = "An exception of type {0} occurred" #. Arguments:\n{1!r}"
             #    message = template.format(type(e).__name__) #, ex.args)
@@ -186,7 +191,7 @@ class CyImage:
             if os.path.exists(image_path):
                 print("Removing " + image_path + " first")
                 os.remove(image_path)
-            py4.export_image(filename=image_path, type="PNG", height=1600, width=2000, base_url=self.url)
+            py4.export_image(filename=image_path, type="PNG", units='pixels', height=1600, width=2000, base_url=self.url)
             if self.verbose:
                 print("Succesfully exported image")
         except py4.CyError as ce:
