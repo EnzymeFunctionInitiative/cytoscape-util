@@ -17,8 +17,11 @@ is_connected = cyimage.wait_for_init()
 
 if not is_connected:
     print("Failed to connect to Cytoscape; exceeded number of tries, or other error")
-    quit()
+    sys.exit()
 
+if args.quit:
+    cyimage.quit()
+    sys.exit()
 
 
 cyimage.load_and_style(ssn_path=args.ssn, do_style=True)

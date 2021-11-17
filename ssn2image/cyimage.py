@@ -1,11 +1,20 @@
 
-import py4cytoscape as py4
+
+# Need local copy for now
+#import py4cytoscape as py4
+
 import time
 import urllib.error
 import requests.exceptions
 import os
 import os.path
+import sys
 #from requests.exceptions import ConnectionError
+
+# Need local copy of py4cytoscape for now so we can get view_create
+lib_dir = os.path.dirname(os.path.realpath(__file__)) + "/../lib"
+sys.path.append(lib_dir)
+import py4cytoscape as py4
 
 
 class CyImage:
@@ -61,10 +70,12 @@ class CyImage:
 
 
     def load_and_style(self, ssn_path, do_style=False):
-
         retval = self.load_ssn(ssn_path)
-        if not retval:
-            return False
+        # As of 11/3/2021 there is a bug in Cytoscape (at least 3.9.0 and previous) that returns false
+        # for XGMML files that are large, even though they are successfully loaded in Cytoscape.
+        # For now we are not checking this.
+        #if not retval:
+        #    return False
 
         retval = self.create_view()
         if not retval:
@@ -155,16 +166,41 @@ class CyImage:
 
     # Private
     def create_view(self):
-        #try:
-        #    if self.verbose:
-        #        print("Creating view")
-        #    #TODO??????
-        #    if self.verbose:
-        #        print("Successfully created view")
+        net_id = 0
+        try:
+            if self.verbose:
+                print("Getting network SUID")
+            net_id = py4.get_network_suid(base_url=self.url)
+            if self.verbose:
+                print("Successfully found SUID")
+        except:
+            if self.verbose:
+                print("Failed to find network SUID")
+            return False
+
+        need_create = False
+        try:
+            if self.verbose:
+                print("Checking for view")
+            views = py4.get_network_views(network=net_id, base_url=self.url)
+            if self.verbose:
+                print("View already created")
+            need_create = False
         #except py4.CyError as ce:
-        #    if self.verbose:
-        #        print("Failed to create view")
-        #    return False
+        except:
+            need_create = True
+
+        if need_create:
+            try:
+                if self.verbose:
+                    print("Creating view view")
+                py4.create_view(network=net_id, base_url=self.url)
+                if self.verbose:
+                    print("Successfully created view")
+            except:
+                if self.verbose:
+                    print("Failed to create view")
+            return False
         return True
 
 
@@ -177,6 +213,7 @@ class CyImage:
             if self.verbose:
                 print("Successfully imported network")
         except py4.CyError as ce:
+            print(ce)
             if self.verbose:
                 print("Failed to import network from file " + ssn_path + "; does file exist?")
             return False
@@ -191,7 +228,7 @@ class CyImage:
             if os.path.exists(image_path):
                 print("Removing " + image_path + " first")
                 os.remove(image_path)
-            py4.export_image(filename=image_path, type="PNG", units='pixels', height=1600, width=2000, base_url=self.url)
+            py4.export_image(filename=image_path, type='PNG', units='pixels', height=1600, width=2000, base_url=self.url)
             if self.verbose:
                 print("Succesfully exported image")
         except py4.CyError as ce:

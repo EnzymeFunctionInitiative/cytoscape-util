@@ -1,0 +1,42 @@
+Bootstrap: docker
+From: ubuntu
+Stage: build
+
+
+%setup
+    mkdir -p /data
+    mkdir -p /opt/cytoscape-util
+
+%files
+    test_ssn.xgmml /opt/test_ssn.xgmml
+
+%post
+    apt-get update
+    apt-get install --no-install-recommends --yes python3 pip git
+    pip install uuid pandas networkx requests python-igraph colorbrewer chardet decorator 
+    git clone https://github.com/EnzymeFunctionInitiative/cytoscape-util.git /opt/cytoscape-util
+
+%runscript
+    # Uses dash
+    if [ "$1" = "quit" ]
+    then
+        python3 /opt/cytoscape-util/ssn2image/ssn2image.py --quit --port $2
+    else
+        if [ $# -lt 3 ]
+        then
+            python3 /opt/cytoscape-util/ssn2image/ssn2image.py --ssn $1 --image-base $2
+        else
+            python3 /opt/cytoscape-util/ssn2image/ssn2image.py --ssn $1 --image-base $2 --port $3
+        fi
+    fi
+
+%test
+    # This doesn't currently work because py4cytoscape tries to create a 'log' dir.
+    #TESTFILE=/tmp/test_cluster.png
+    #python3 /opt/cytoscape-util/ssn2image/ssn2image.py --ssn /opt/test_ssn.xgmml --image-base $TESTFILE
+    #if [ -f "$TESTFILE" ]; then
+    #    exit 0
+    #else
+    #    exit 1
+    #fi
+
