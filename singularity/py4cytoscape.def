@@ -4,17 +4,16 @@ Stage: build
 
 
 %setup
-    mkdir -p /data
-    mkdir -p /opt/cytoscape-util
+    mkdir -p $SINGULARITY_ROOTFS/opt/cytoscape-util
 
 %files
-    test_ssn.xgmml /opt/test_ssn.xgmml
 
 %post
     apt-get update
-    apt-get install --no-install-recommends --yes python3 pip git
-    pip install uuid pandas networkx requests python-igraph colorbrewer chardet decorator 
-    git clone https://github.com/EnzymeFunctionInitiative/cytoscape-util.git /opt/cytoscape-util
+    apt-get install --no-install-recommends --yes python3 pip git libgd-perl
+    pip install uuid pandas networkx requests python-igraph colorbrewer chardet decorator
+    git clone --branch dev-local-py4cytoscape https://github.com/EnzymeFunctionInitiative/cytoscape-util.git /opt/cytoscape-util
+    #chmod +x /opt/cytoscape-util/misc/crop_ssn_image.pl
 
 %runscript
     # Uses dash
@@ -29,6 +28,9 @@ Stage: build
             python3 /opt/cytoscape-util/ssn2image/ssn2image.py --ssn $1 --image-base $2 --port $3
         fi
     fi
+    /opt/cytoscape-util/misc/crop_ssn_image.pl $2 $2.crop
+    mv $2 $2.bak
+    mv $2.crop $2
 
 %test
     # This doesn't currently work because py4cytoscape tries to create a 'log' dir.
