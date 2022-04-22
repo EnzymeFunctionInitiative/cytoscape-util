@@ -1,0 +1,42 @@
+Bootstrap: docker
+From: perl
+Stage: build
+
+
+%setup
+
+%files
+    /home/nils/docker/crop_ssn_image.pl /opt/crop_ssn_image.pl
+
+%post
+    chmod +x /opt/crop_ssn_image.pl
+#    apt-get update
+#    apt-get install --no-install-recommends --yes  \
+#            openjdk-11-jdk \
+#            xvfb \
+#            curl
+#
+#    echo "export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64" >> $SINGULARITY_ENVIRONMENT
+#
+#    #curl -Ls https://github.com/cytoscape/cytoscape/releases/download/3.9.0/Cytoscape_3_9_1_unix.sh > /opt/Cytoscape_3_9_1_unix.sh
+#    /bin/bash /opt/Cytoscape_3_9_1_unix.sh -q -dir /opt/cytoscape
+#    rm -f /opt/Cytoscape_3_9_2_unix.sh
+#
+#    cat <<EOF! > /opt/get_cytoscape_rest_version.sh
+##!/bin/bash
+#grep 'cy-rest.*.jar' /opt/cytoscape/.install4j/i4jparams.conf | sed 's/^.*cy-rest-\([0-9\.]\+\)\.jar.*$/\1/'
+#EOF!
+#    chmod +x /opt/get_cytoscape_rest_version.sh
+#
+#    sed 's/^\(export KARAF_OPTS=.*\)$/\1\\ -Duser.home="\/opt\/CytoscapeConfigHome"/' /opt/cytoscape/cytoscape.sh > /opt/cytoscape/cytoscape.sh.tmp1
+#    sed 's/^export KARAF_DATA="${HOME}\/CytoscapeConfiguration\//export KARAF_DATA="\/opt\/CytoscapeConfigHome\/CytoscapeConfiguration\//' /opt/cytoscape/cytoscape.sh.tmp1 > /opt/cytoscape/cytoscape.sh.tmp2
+#    mv /opt/cytoscape/cytoscape.sh.tmp2 /opt/cytoscape/cytoscape.sh
+#    rm -f /opt/cytoscape/cytoscape.sh.tmp1
+#    chmod +x /opt/cytoscape/cytoscape.sh
+#
+#    apt autoremove
+#    apt-get clean
+
+%runscript
+    /opt/crop_ssn_image.pl $1 $2
+

@@ -228,6 +228,7 @@ class CyImage:
             if os.path.exists(image_path):
                 print("Removing " + image_path + " first")
                 os.remove(image_path)
+            py4.toggle_graphics_details(base_url=self.url)
             py4.export_image(filename=image_path, type='PNG', units='pixels', height=1600, width=2000, base_url=self.url)
             if self.verbose:
                 print("Succesfully exported image")

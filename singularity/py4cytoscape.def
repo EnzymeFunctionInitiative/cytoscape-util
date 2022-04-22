@@ -10,10 +10,14 @@ Stage: build
 
 %post
     apt-get update
-    apt-get install --no-install-recommends --yes python3 pip git libgd-perl
+    apt-get install --no-install-recommends --yes python3 pip git libgd-perl locales language-pack-en
+    export LANGUAGE=en_US.UTF-8 && export LANG=en_US.UTF-8 && export LC_ALL=en_US.UTF-8
+    locale-gen en_US
+    locale-gen en_US.UTF-8
+    update-locale LC_ALL=en_US.UTF-8
     pip install uuid pandas networkx requests python-igraph colorbrewer chardet decorator
     git clone --branch dev-local-py4cytoscape https://github.com/EnzymeFunctionInitiative/cytoscape-util.git /opt/cytoscape-util
-    #chmod +x /opt/cytoscape-util/misc/crop_ssn_image.pl
+    chmod +x /opt/cytoscape-util/misc/crop_ssn_image.pl
 
 %runscript
     # Uses dash
