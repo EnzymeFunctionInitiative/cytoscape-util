@@ -41,5 +41,6 @@ EOF!
         mkdir -p /opt/CytoscapeConfigHome/CytoscapeConfiguration
         echo "cyrest.version=$rest_ver" > /opt/CytoscapeConfigHome/CytoscapeConfiguration/cytoscape3.props
     fi
+    export JAVA_OPTS="-Xms150G -Xmx150G"
     xvfb-run --server-args="-screen 0 2560x1600x24" /opt/cytoscape/cytoscape.sh -R $1 < /dev/zero
 
