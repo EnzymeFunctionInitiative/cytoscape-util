@@ -1,8 +1,12 @@
 # cytoscape-util
 
-1. Build the py4cytoscape.sif singularity image
+1. Build images
 
-2. Edit the batch_proc/batch_cyto.sh script as necessary
+    mkdir sif-builds
 
-3. Added batch_proc/batch_cyto.sh script to crontab
+    sudo singularity build sif-builds/py4cytoscape.sif cytoscape-util/singularity/py4cytoscape.def
+
+    sudo singularity build sif-builds/cytoscape.sif cytoscape-util/singularity/cytoscape.def
+
+2. Eventually use batch_proc to have a server that generates jobs in batches.
 
