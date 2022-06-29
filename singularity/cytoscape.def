@@ -6,25 +6,38 @@ Stage: build
 %setup
     mkdir -p $SINGULARITY_ROOTFS/opt/cytoscape/framework/instances
     mkdir -p $SINGULARITY_ROOTFS/opt/CytoscapeConfigHome
+    mkdir -p $SINGULARITY_ROOTFS/data
+
+%files
+    cytoscape.tar /opt/cytoscape.tar
+    cytoscape-util/misc/default_vizmap.xml /opt/default_vizmap.xml
 
 %post
     apt-get update
     apt-get install --no-install-recommends --yes  \
-            openjdk-11-jdk \
+            openjdk-17-jdk \
             xvfb \
             curl
+#            openjdk-11-jdk \
 
-    echo "export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64" >> $SINGULARITY_ENVIRONMENT
+    echo "export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64" >> $SINGULARITY_ENVIRONMENT
 
-    curl -Ls https://github.com/cytoscape/cytoscape/releases/download/3.9.1/Cytoscape_3_9_1_unix.sh > /opt/Cytoscape_3_9_1_unix.sh
-    /bin/bash /opt/Cytoscape_3_9_1_unix.sh -q -dir /opt/cytoscape
-    rm -f /opt/Cytoscape_3_9_1_unix.sh
+    #curl -Ls https://github.com/cytoscape/cytoscape/releases/download/3.9.1/Cytoscape_3_9_1_unix.sh > /opt/Cytoscape_3_9_1_unix.sh
+    #/bin/bash /opt/Cytoscape_3_9_1_unix.sh -q -dir /opt/cytoscape
+    #rm -f /opt/Cytoscape_3_9_1_unix.sh
+    tar -xf /opt/cytoscape.tar -C /opt
+    rm /opt/cytoscape.tar
 
-    cat <<EOF! > /opt/get_cytoscape_rest_version.sh
-#!/bin/bash
-grep 'cy-rest.*.jar' /opt/cytoscape/.install4j/i4jparams.conf | sed 's/^.*cy-rest-\([0-9\.]\+\)\.jar.*$/\1/'
+    ls /opt/cytoscape/apps | grep 'cy-rest.*.jar' | sed 's/^.*cy-rest-\([0-9\.]\+\)-SNAPSHOT\.jar.*$/cyrest.version=\1.SNAPSHOT/' > /opt/cy-rest-version.txt
+    #grep 'cy-rest.*.jar' /opt/cytoscape/.install4j/i4jparams.conf | sed 's/^.*cy-rest-\([0-9\.]\+\)\.jar.*$/\1/'
+    cat <<EOF! > /opt/get_cytoscape_image_export_params.txt
+hideLabels=true
+Units=pixels
+transparentBackground=false
+Zoom=400
+allGraphicsDetails=false
+Resolution=72
 EOF!
-    chmod +x /opt/get_cytoscape_rest_version.sh
 
     sed 's/^\(export KARAF_OPTS=.*\)$/\1\\ -Duser.home="\/opt\/CytoscapeConfigHome"/' /opt/cytoscape/cytoscape.sh > /opt/cytoscape/cytoscape.sh.tmp1
     sed 's/^export KARAF_DATA="${HOME}\/CytoscapeConfiguration\//export KARAF_DATA="\/opt\/CytoscapeConfigHome\/CytoscapeConfiguration\//' /opt/cytoscape/cytoscape.sh.tmp1 > /opt/cytoscape/cytoscape.sh.tmp2
@@ -32,15 +45,18 @@ EOF!
     rm -f /opt/cytoscape/cytoscape.sh.tmp1
     chmod +x /opt/cytoscape/cytoscape.sh
 
+    /opt/cytoscape/gen_vmoptions.sh
+
     apt autoremove
     apt-get clean
 
 %runscript
     if [ ! -f /opt/CytoscapeConfigHome/CytoscapeConfiguration/cytoscape3.props ]; then
-        rest_ver=`/opt/get_cytoscape_rest_version.sh`
         mkdir -p /opt/CytoscapeConfigHome/CytoscapeConfiguration
-        echo "cyrest.version=$rest_ver" > /opt/CytoscapeConfigHome/CytoscapeConfiguration/cytoscape3.props
+        cat /opt/cy-rest-version.txt > /opt/CytoscapeConfigHome/CytoscapeConfiguration/cytoscape3.props
+        cat /opt/get_cytoscape_image_export_params.txt > /opt/CytoscapeConfigHome/CytoscapeConfiguration/writer.org.cytoscape.io.internal.write.graphics.PNGWriter.props
+        cp /opt/default_vizmap.xml /opt/CytoscapeConfigHome/CytoscapeConfiguration/default_vizmap.xml
     fi
     export JAVA_OPTS="-Xms150G -Xmx150G"
-    xvfb-run --server-args="-screen 0 2560x1600x24" /opt/cytoscape/cytoscape.sh -R $1 < /dev/zero
+    xvfb-run --server-args="-screen 0 2560x2000x24" /opt/cytoscape/cytoscape.sh -R $1 < /dev/zero
 

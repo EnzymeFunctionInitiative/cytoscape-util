@@ -6,8 +6,10 @@ def get_arguments():
     parser.add_argument("--ssn", required=False, help="Full path to input SSN")
     parser.add_argument("--image-base", required=False, help="Full path to output image base; _sm and _lg suffixes will be added")
     parser.add_argument("--port", default=8888, help="Port to connect to Cytoscape (optional)")
+    parser.add_argument("--zoom", default=100, help="Image export zoom")
     parser.add_argument("--verbose", action="store_true")
     parser.add_argument("--quit", action="store_true")
+    parser.add_argument("--style", action="store_true")
 
     args = parser.parse_args()
 

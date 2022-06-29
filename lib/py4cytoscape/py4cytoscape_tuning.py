@@ -3,7 +3,7 @@
 """Tuning parameter needed because Cytoscape occasionally returns before it's done with an operation
 """
 
-"""Copyright 2020 The Cytoscape Consortium
+"""Copyright 2020-2022 The Cytoscape Consortium
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated 
 documentation files (the "Software"), to deal in the Software without restriction, including without limitation the 
@@ -24,7 +24,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR TH
 
 CATCHUP_FILTER_SECS = 0 # 1
 MODEL_PROPAGATION_SECS = 0 #2
-CATCHUP_NETWORK_SECS = 2 # How long to sleep between network operation retries
+CATCHUP_NETWORK_SECS = 4 # How long to sleep between network operation retries
 CATCHUP_NETWORK_TIMEOUT_SECS = 60 # How long to keep retrying network operation
 
 def set_catchup_filter_secs(delay_secs):

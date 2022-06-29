@@ -9,6 +9,7 @@ import requests.exceptions
 import os
 import os.path
 import sys
+import datetime
 #from requests.exceptions import ConnectionError
 
 # Need local copy of py4cytoscape for now so we can get view_create
@@ -22,34 +23,34 @@ class CyImage:
         self.url = 'http://127.0.0.1:' + str(port) + '/v1'
         self.verbose = verbose
 
+    def log_action(self, message):
+        if self.verbose:
+            dt = datetime.datetime.now()
+            print(str(dt) + ": " + message)
+
     def wait_for_init(self):
         is_connected = False
         tries = 0
         max_tries = 10 # 200 seconds
         while not is_connected and tries < max_tries:
             try:
-                if self.verbose:
-                    print("Checking if Cytoscape is alive")
+                self.log_action("cytoscape_ping - Checking if Cytoscape is alive")
                 py4.cytoscape_ping(self.url)
                 is_connected = True
             except requests.exceptions.ConnectionError as ce:
                 # Cy isn't started, or is still starting
-                if self.verbose:
-                    print("Waiting 20s for Cytoscape to start")
+                self.log_action("Waiting 20s for Cytoscape to start")
                 time.sleep(20)
             except urllib.error.HTTPError as he:
                 if he.code >= 500:
-                    if self.verbose:
-                        print("Waiting 20s for the REST service to start")
+                    self.log_action("Waiting 20s for the REST service to start")
                     # Wait for REST service to start up
                     time.sleep(20)
                 elif he.code >= 400:
-                    if self.verbose:
-                        print("An HTTP error occurred")
+                    self.log_action("An HTTP error occurred")
                     return False
             except requests.exceptions.HTTPError as he:
-                if self.verbose:
-                    print("Waiting 20s for the REST service to start")
+                self.log_action("Waiting 20s for the REST service to start")
                 # Wait for REST service to start up
                 time.sleep(20)
             #except Exception as e:
@@ -60,11 +61,10 @@ class CyImage:
             tries = tries + 1
 
         if tries >= max_tries:
-            print("Too many attempts to connect")
+            self.log_action("Too many attempts to connect")
             return False
         
-        if self.verbose:
-            print("Good to go")
+        self.log_action("Good to go")
         
         return True
 
@@ -89,13 +89,13 @@ class CyImage:
         return True
 
 
-    def export_image(self, image_path):
+    def export_image(self, image_path, zoom):
 
         retval = self.layout()
         if not retval:
             return False
 
-        retval = self.export_image_api(image_path)
+        retval = self.export_image_api(image_path, zoom)
         if not retval:
             return False
 
@@ -103,25 +103,19 @@ class CyImage:
     # Private
     def layout(self):
         try:
-            if self.verbose:
-                print("Performing layout")
+            self.log_action("layout_network Performing layout")
             py4.layout_network(layout_name="force-directed", base_url=self.url)
-            if self.verbose:
-                print("Succesfully performed layout")
+            self.log_action("Succesfully performed layout")
         except py4.CyError as ce:
-            if self.verbose:
-                print("Failed to perform layout")
+            self.log_action("Failed to perform layout: " + repr(ce))
             return False
 
         try:
-            if self.verbose:
-                print("Fitting content to window")
+            self.log_action("fit_content - Fitting content to window")
             py4.fit_content(base_url=self.url)
-            if self.verbose:
-                print("Successfully fit content")
+            self.log_action("Successfully fit content")
         except py4.CyError as ce:
-            if self.verbose:
-                print("Failed to fit content")
+            self.log_action("Failed to fit content: " + repr(ce))
             return False
 
         return True
@@ -130,8 +124,7 @@ class CyImage:
     # Private
     def style(self):
         try:
-            if self.verbose:
-                print("Applying default styles")
+            self.log_action("Applying default styles")
             #defaults = {"NODE_SHAPE": "ELLIPSE", "NODE_SIZE": 10, 
             node_ids = list(py4.get_table_columns(columns='name', base_url=self.url).index)
             py4.set_node_label_bypass(node_ids, "", base_url=self.url)
@@ -143,22 +136,17 @@ class CyImage:
             py4.set_edge_line_width_default(new_width=1, base_url=self.url)
             py4.set_edge_color_default(new_color="#CCCCCC", base_url=self.url)
             py4.set_edge_line_style_default(new_line_style="SOLID", base_url=self.url)
-            if self.verbose:
-                print("Done applying default styles")
+            self.log_action("Done applying default styles")
         except py4.CyError as ce:
-            if self.verbose:
-                print("Failed to apply default styles")
+            self.log_action("Failed to apply default styles: " + repr(ce))
             return False
 
         try:
-            if self.verbose:
-                print("Creating node fill color passthrough mapping")
+            self.log_action("map_visual_property - Creating node fill color passthrough mapping")
             py4.map_visual_property(visual_prop="node fill color", table_column="node.fillColor", mapping_type="p", base_url=self.url)
-            if self.verbose:
-                print("Done creating node fill color mapping")
+            self.log_action("Done creating node fill color mapping")
         except py4.CyError as ce:
-            if self.verbose:
-                print("Failed to create node fill color mapping")
+            self.log_action("Failed to create node fill color mapping: " + repr(ce))
             return False
 
         return True
@@ -168,38 +156,33 @@ class CyImage:
     def create_view(self):
         net_id = 0
         try:
-            if self.verbose:
-                print("Getting network SUID")
+            self.log_action("get_network_suid - Getting network SUID")
             net_id = py4.get_network_suid(base_url=self.url)
-            if self.verbose:
-                print("Successfully found SUID")
+            self.log_action("Successfully found SUID " + str(net_id))
         except:
-            if self.verbose:
-                print("Failed to find network SUID")
+            self.log_action("Failed to find network SUID")
             return False
 
         need_create = False
         try:
-            if self.verbose:
-                print("Checking for view")
+            self.log_action("get_network_views - Checking for view")
             views = py4.get_network_views(network=net_id, base_url=self.url)
-            if self.verbose:
-                print("View already created")
-            need_create = False
-        #except py4.CyError as ce:
+            if len(views) == 0:
+                self.log_action("View is needed")
+                need_create = True
+            else:
+                self.log_action("View already created")
+                need_create = False
         except:
             need_create = True
 
         if need_create:
             try:
-                if self.verbose:
-                    print("Creating view view")
+                self.log_action("create_view - Creating view view")
                 py4.create_view(network=net_id, base_url=self.url)
-                if self.verbose:
-                    print("Successfully created view")
+                self.log_action("Successfully created view")
             except:
-                if self.verbose:
-                    print("Failed to create view")
+                self.log_action("Failed to create view")
             return False
         return True
 
@@ -207,46 +190,40 @@ class CyImage:
     # Private
     def load_ssn(self, ssn_path):
         try:
-            if self.verbose:
-                print("Trying to load network " + ssn_path)
+            self.log_action("impoprt_network_from_file - Trying to load network " + ssn_path)
             py4.import_network_from_file(base_url=self.url, file=ssn_path)
-            if self.verbose:
-                print("Successfully imported network")
+            self.log_action("Successfully imported network")
         except py4.CyError as ce:
-            print(ce)
-            if self.verbose:
-                print("Failed to import network from file " + ssn_path + "; does file exist?")
+            self.log_action("Failed to import network from file " + ssn_path + "; does file exist?: " + repr(ce))
             return False
         return True
 
 
     # Private
-    def export_image_api(self, image_path):
+    def export_image_api(self, image_path, the_zoom):
         try:
-            if self.verbose:
-                print("Trying to export to " + image_path)
+            self.log_action("toggle_graphics_details")
             if os.path.exists(image_path):
-                print("Removing " + image_path + " first")
+                self.log_action("Removing " + image_path + " first")
                 os.remove(image_path)
             py4.toggle_graphics_details(base_url=self.url)
-            py4.export_image(filename=image_path, type='PNG', units='pixels', height=1600, width=2000, base_url=self.url)
-            if self.verbose:
-                print("Succesfully exported image")
+            self.log_action("export_image - Trying to export to " + image_path + " with zoom " + str(the_zoom))
+            py4.export_image(filename=image_path, type='PNG', units='pixels', height=1600, width=2000, zoom=the_zoom, base_url=self.url)
+            #py4.export_image(filename=image_path, type='PNG', units='pixels', height=1600, width=2000, zoom=20, base_url=self.url)
+            self.log_action("Succesfully exported image")
         except py4.CyError as ce:
-            if self.verbose:
-                print("Failed to export image to " + image_path)
+            self.log_action("Failed to export image to " + image_path + ": " + repr(ce))
             return False
         return True
 
     def quit(self):
         try:
-            if self.verbose:
-                print("Quitting")
+            self.log_action("command_quit - Quitting Cytoscape")
             py4.command_quit(base_url=self.url)
+            self.log_action("Done quitting")
         except py4.CyError as ce:
-            if self.verbose:
-                print("Failed to quit")
-                return False
+            self.log_action("Failed to quit: " + repr(ce))
+            return False
         return True
 
 

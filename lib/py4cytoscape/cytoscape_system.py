@@ -3,7 +3,7 @@
 """Functions for inspecting and managing apps for Cytoscape.
 """
 
-"""Copyright 2020 The Cytoscape Consortium
+"""Copyright 2020-2022 The Cytoscape Consortium
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated 
 documentation files (the "Software"), to deal in the Software without restriction, including without limitation the 
@@ -181,7 +181,7 @@ def cytoscape_free_memory(base_url=DEFAULT_BASE_URL):
         'Unused memory freed up.'
     """
     try:
-        res = commands.cyrest_get('gc', require_json=False)
+        res = commands.cyrest_get('gc', base_url=base_url, require_json=False)
         return narrate('Unused memory freed up.')
     except:
         raise CyError('CyREST connection problem. py4cytoscape cannot continue!')

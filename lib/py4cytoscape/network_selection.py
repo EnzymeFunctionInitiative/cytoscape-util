@@ -8,7 +8,7 @@ II. Node selection functions
 III. Edge selection functions
 """
 
-"""Copyright 2020 The Cytoscape Consortium
+"""Copyright 2020-2022 The Cytoscape Consortium
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated 
 documentation files (the "Software"), to deal in the Software without restriction, including without limitation the 
@@ -77,6 +77,34 @@ def clear_selection(type='both', network=None, base_url=DEFAULT_BASE_URL):
         res = commands.cyrest_put(f'networks/{net_suid}/tables/defaultedge/columns/selected',
                                   parameters={'default': 'false'}, base_url=base_url, require_json=False)
 
+    return res
+
+@cy_log
+def select_all(network=None, base_url=DEFAULT_BASE_URL):
+    """Selects all nodes and edges in a Cytoscape Network
+
+    Args:
+        network (SUID or str or None): Name or SUID of a network or view. Default is the
+            "current" network active in Cytoscape.
+        base_url (str): Ignore unless you need to specify a custom domain,
+            port or version to connect to the CyREST API. Default is http://127.0.0.1:1234
+            and the latest version of the CyREST API supported by this version of py4cytoscape.
+
+    Returns:
+        dict: {'nodes': [node list], 'edges': [edge list]} or {} for empty network
+
+    Raises:
+        CyError: if network name doesn't exist
+        requests.exceptions.RequestException: if can't connect to Cytoscape or Cytoscape returns an error
+
+    Examples:
+        >>> select_all()
+        {'nodes': [370675, 370677, ...], 'edges': [371699, 371187, ...]}
+        >>> select_all(network=52)
+        {'nodes': [370675, 370677, ...], 'edges': [371699, 371187, ...]}
+    """
+    net_suid = networks.get_network_suid(network, base_url=base_url)
+    res = commands.commands_post(f'network select network=SUID:"{net_suid}" nodeList="all" edgeList="all"', base_url=base_url)
     return res
 
 
@@ -209,11 +237,10 @@ def select_all_nodes(network=None, base_url=DEFAULT_BASE_URL):
         :meth:`select_nodes`
     """
     suid = networks.get_network_suid(network, base_url=base_url)
-    all_node_SUIDs = commands.cyrest_get(f'networks/{suid}/nodes', base_url=base_url)
 
-    res = select_nodes(all_node_SUIDs)
+    res = commands.commands_post(f'network select SUID="{suid}" nodeList="all"', base_url=base_url)
+
     return res['nodes']
-    # TODO: Does the RCy3 code work? It's passing an unusual list to CyREST
 
 
 @cy_log
@@ -282,7 +309,8 @@ def get_selected_nodes(node_suids=False, network=None, base_url=DEFAULT_BASE_URL
         return None
     else:
         selected_node_suids = commands.cyrest_get(f'networks/{net_suid}/nodes',
-                                                  parameters={'column': 'selected', 'query': 'true'})
+                                                  parameters={'column': 'selected', 'query': 'true'},
+                                                  base_url=base_url)
         if node_suids:
             return selected_node_suids
         else:
@@ -488,11 +516,10 @@ def select_all_edges(network=None, base_url=DEFAULT_BASE_URL):
         [104432, 104431, ...]
     """
     suid = networks.get_network_suid(network, base_url=base_url)
-    all_edge_SUIDs = commands.cyrest_get(f'networks/{suid}/edges', base_url=base_url)
 
-    res = select_edges(all_edge_SUIDs)
+    res = commands.commands_post(f'network select SUID="{suid}" edgeList="all"', base_url=base_url)
+
     return res['edges']
-    # TODO: Does the RCy3 code work? It's passing an unusual list to CyREST
 
 
 @cy_log
@@ -630,7 +657,8 @@ def get_selected_edges(edge_suids=False, network=None, base_url=DEFAULT_BASE_URL
         return None
     else:
         selected_edge_suids = commands.cyrest_get(f'networks/{net_suid}/edges',
-                                                  parameters={'column': 'selected', 'query': 'true'})
+                                                  parameters={'column': 'selected', 'query': 'true'},
+                                                  base_url=base_url)
         if edge_suids:
             return selected_edge_suids
         else:

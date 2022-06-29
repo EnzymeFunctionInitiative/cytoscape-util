@@ -18,7 +18,7 @@ Note:
      See the ``Utils`` section for functions that convert node and edge names to SUIDs, and vice versa.
 """
 
-"""Copyright 2020 The Cytoscape Consortium
+"""Copyright 2020-2022 The Cytoscape Consortium
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated 
 documentation files (the "Software"), to deal in the Software without restriction, including without limitation the 
@@ -131,7 +131,7 @@ def rename_network(title, network=None, base_url=DEFAULT_BASE_URL):
     old_suid = get_network_suid(network, base_url=base_url)
     cmd = f'network rename name="{title}" sourceNetwork="SUID:{old_suid}"'
     # TODO: Put double quotes around SUID
-    return commands.commands_post(cmd, base_url)
+    return commands.commands_post(cmd, base_url=base_url)
 
 
 @cy_log
@@ -194,7 +194,7 @@ def get_network_name(suid=None, base_url=DEFAULT_BASE_URL):
     if isinstance(suid, str):
         # title provided
         if suid == 'current':
-            network_suid = get_network_suid(base_url=DEFAULT_BASE_URL)
+            network_suid = get_network_suid(base_url=base_url)
         else:
             net_names = get_network_list(base_url=base_url)
             if suid in net_names:
@@ -205,9 +205,9 @@ def get_network_name(suid=None, base_url=DEFAULT_BASE_URL):
         # suid provided
         network_suid = suid
     else:
-        network_suid = get_network_suid(base_url=DEFAULT_BASE_URL)
+        network_suid = get_network_suid(base_url=base_url)
 
-    res = commands.cyrest_get('networks.names', {'column': 'suid', 'query': network_suid}, base_url=DEFAULT_BASE_URL)
+    res = commands.cyrest_get('networks.names', {'column': 'suid', 'query': network_suid}, base_url=base_url)
     return res[0]['name']
 
 

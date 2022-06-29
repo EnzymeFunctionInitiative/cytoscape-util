@@ -23,10 +23,21 @@ if args.quit:
     cyimage.quit()
     sys.exit()
 
+do_style = False
+if args.style:
+    do_style = True
 
-cyimage.load_and_style(ssn_path=args.ssn, do_style=True)
+cyimage.load_and_style(ssn_path=args.ssn, do_style=do_style)
 
-cyimage.export_image(image_path=args.image_base)
+default_zoom = 100
+zoom = default_zoom
+if args.zoom:
+    try:
+        zoom = float(args.zoom)
+    except:
+        zoom = default_zoom
+
+cyimage.export_image(image_path=args.image_base, zoom=zoom)
 
 cyimage.quit()
 
