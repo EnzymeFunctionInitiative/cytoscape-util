@@ -19,8 +19,8 @@ import py4cytoscape as py4
 
 
 class CyImage:
-    def __init__(self, port=8888, verbose=False):
-        self.url = 'http://127.0.0.1:' + str(port) + '/v1'
+    def __init__(self, port=8888, host='127.0.0.1', verbose=False):
+        self.url = 'http://' + host + ':' + str(port) + '/v1'
         self.verbose = verbose
 
     def log_action(self, message):
@@ -190,8 +190,11 @@ class CyImage:
     # Private
     def load_ssn(self, ssn_path):
         try:
-            self.log_action("impoprt_network_from_file - Trying to load network " + ssn_path)
-            py4.import_network_from_file(base_url=self.url, file=ssn_path)
+            file_name = os.path.basename(ssn_path)
+            self.log_action("sandbox_send_to - Trying to send " + ssn_path + " to sandbox as " + file_name)
+            py4.sandbox.sandbox_send_to(ssn_path, dest_file=file_name, base_url=self.url)
+            self.log_action("impoprt_network_from_file - Trying to load network " + file_name)
+            py4.import_network_from_file(base_url=self.url, file=file_name)
             self.log_action("Successfully imported network")
         except py4.CyError as ce:
             self.log_action("Failed to import network from file " + ssn_path + "; does file exist?: " + repr(ce))
@@ -202,15 +205,16 @@ class CyImage:
     # Private
     def export_image_api(self, image_path, the_zoom):
         try:
+            ssn_png = "ssn.png"
             self.log_action("toggle_graphics_details")
-            if os.path.exists(image_path):
-                self.log_action("Removing " + image_path + " first")
-                os.remove(image_path)
             py4.toggle_graphics_details(base_url=self.url)
-            self.log_action("export_image - Trying to export to " + image_path + " with zoom " + str(the_zoom))
-            py4.export_image(filename=image_path, type='PNG', units='pixels', height=1600, width=2000, zoom=the_zoom, base_url=self.url)
+            self.log_action("export_image - exporting to sandbox " + ssn_png + " with zoom " + str(the_zoom))
+            py4.export_image(filename=ssn_png, type='PNG', zoom=the_zoom, all_graphics_details=False, overwrite_file=True, base_url=self.url)
+            #py4.export_image(filename=image_path, type='PNG', units='pixels', height=1600, width=2000, zoom=the_zoom, base_url=self.url)
             #py4.export_image(filename=image_path, type='PNG', units='pixels', height=1600, width=2000, zoom=20, base_url=self.url)
-            self.log_action("Succesfully exported image")
+            self.log_action("sandbox_get_from - getting sandbox image " + ssn_png + " to " + image_path)
+            py4.sandbox.sandbox_get_from(ssn_png, dest_file=image_path, overwrite=True, base_url=self.url)
+            self.log_action("Done exporting image")
         except py4.CyError as ce:
             self.log_action("Failed to export image to " + image_path + ": " + repr(ce))
             return False

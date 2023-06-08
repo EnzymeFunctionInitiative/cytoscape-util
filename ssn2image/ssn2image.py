@@ -12,7 +12,11 @@ from cyimage import CyImage
 
 args = util.get_arguments()
 
-cyimage = CyImage(verbose=args.verbose, port=args.port)
+host = '127.0.0.1'
+if args.host:
+    host = args.host
+
+cyimage = CyImage(verbose=args.verbose, host=host, port=args.port)
 is_connected = cyimage.wait_for_init()
 
 if not is_connected:

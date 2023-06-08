@@ -6,8 +6,8 @@ Stage: build
 %setup
     mkdir -p $SINGULARITY_ROOTFS/opt/cytoscape-util
 
-%files
-    /home/nils/cytoscape-singularity/cytoscape-util /opt
+#%files
+#    /home/nils/cytoscape-singularity/cytoscape-util /opt
 
 %post
     apt-get update
@@ -17,7 +17,8 @@ Stage: build
     locale-gen en_US.UTF-8
     update-locale LC_ALL=en_US.UTF-8
     pip install uuid pandas networkx requests python-igraph colorbrewer chardet decorator
-#    git clone --branch dev-local-py4cytoscape https://github.com/EnzymeFunctionInitiative/cytoscape-util.git /opt/cytoscape-util
+    pip install py4cytoscape
+    git clone --branch dev-local-py4cytoscape https://github.com/EnzymeFunctionInitiative/cytoscape-util.git /opt/cytoscape-util
     chmod +x /opt/cytoscape-util/misc/crop_ssn_image.pl
 
 %runscript
@@ -33,16 +34,20 @@ Stage: build
         fi
         if [ $# -gt 3 ] && [ $4 -gt 0 ]
         then
-            args="$args --verbose"
+            args="$args --host $4"
         fi
-        if [ $# -gt 4 ]
+        if [ $# -gt 4 ] && [ $5 -gt 0 ]
         then
             args="$args --zoom $5"
+        fi
+        if [ $# -gt 5 ]
+        then
+            args="$args --verbose"
         fi
         python3 /opt/cytoscape-util/ssn2image/ssn2image.py $args
         echo "$args"
     fi
-    if [ $# -gt 5 ] && [ $6 -gt 0 ]
+    if [ $# -gt 6 ] && [ $6 -gt 0 ]
     then
         echo "Cropping image"
         /opt/cytoscape-util/misc/crop_ssn_image.pl $2 $2.crop
