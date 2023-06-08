@@ -18,7 +18,7 @@ Stage: build
     update-locale LC_ALL=en_US.UTF-8
     pip install uuid pandas networkx requests python-igraph colorbrewer chardet decorator
     pip install py4cytoscape
-    git clone --branch dev-local-py4cytoscape https://github.com/EnzymeFunctionInitiative/cytoscape-util.git /opt/cytoscape-util
+    git clone --branch devel https://github.com/EnzymeFunctionInitiative/cytoscape-util.git /opt/cytoscape-util
     chmod +x /opt/cytoscape-util/misc/crop_ssn_image.pl
 
 %runscript
