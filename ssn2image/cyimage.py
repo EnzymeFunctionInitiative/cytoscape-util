@@ -77,8 +77,8 @@ class CyImage:
         # As of 11/3/2021 there is a bug in Cytoscape (at least 3.9.0 and previous) that returns false
         # for XGMML files that are large, even though they are successfully loaded in Cytoscape.
         # For now we are not checking this.
-        #if not retval:
-        #    return False
+        if not retval:
+            return False
 
         retval = self.create_view()
         if not retval:
@@ -128,17 +128,19 @@ class CyImage:
     def style(self):
         try:
             self.log_action("Applying default styles")
+            py4.set_visual_property_default({'visualProperty': 'NODE_SHAPE', 'value': 'ELLIPSE'}, style_name="default", base_url=self.url)
+            py4.set_visual_property_default({'visualProperty': 'NODE_SIZE', 'value': '10'}, style_name="default", base_url=self.url)
             #defaults = {"NODE_SHAPE": "ELLIPSE", "NODE_SIZE": 10, 
-            node_ids = list(py4.get_table_columns(columns='name', base_url=self.url).index)
-            py4.set_node_label_bypass(node_ids, "", base_url=self.url)
-            py4.set_node_border_width_default(new_width=0, base_url=self.url)
-            py4.set_node_label_default(new_label="", base_url=self.url)
-            #py4.clear_node_property_bypass(node_ids, "NODE_LABEL", base_url=self.url)
-            py4.set_node_shape_default(new_shape="ELLIPSE", base_url=self.url)
-            py4.set_node_size_default(new_size=10, base_url=self.url)
-            py4.set_edge_line_width_default(new_width=1, base_url=self.url)
-            py4.set_edge_color_default(new_color="#CCCCCC", base_url=self.url)
-            py4.set_edge_line_style_default(new_line_style="SOLID", base_url=self.url)
+            #node_ids = list(py4.get_table_columns(columns='name', base_url=self.url).index)
+            #py4.set_node_label_bypass(node_ids, "", base_url=self.url)
+            #py4.set_node_border_width_default(new_width=0, base_url=self.url)
+            #py4.set_node_label_default(new_label="", base_url=self.url)
+            ##py4.clear_node_property_bypass(node_ids, "NODE_LABEL", base_url=self.url)
+            #py4.set_node_shape_default(new_shape="ELLIPSE", base_url=self.url)
+            #py4.set_node_size_default(new_size=10, base_url=self.url)
+            #py4.set_edge_line_width_default(new_width=1, base_url=self.url)
+            #py4.set_edge_color_default(new_color="#CCCCCC", base_url=self.url)
+            #py4.set_edge_line_style_default(new_line_style="SOLID", base_url=self.url)
             self.log_action("Done applying default styles")
         except py4.CyError as ce:
             self.log_action("Failed to apply default styles: " + repr(ce))
@@ -194,8 +196,12 @@ class CyImage:
     def load_ssn(self, ssn_path):
         try:
             file_name = os.path.basename(ssn_path)
-            self.log_action("sandbox_send_to - Trying to send " + ssn_path + " to sandbox as " + file_name)
-            py4.sandbox.sandbox_send_to(ssn_path, dest_file=file_name, base_url=self.url)
+            if ssn_path[0:4] == "http" or ssn_path[0:4] == "file":
+                self.log_action("sandbox_url_to - Trying to send URL " + ssn_path + " to sandbox as " + file_name)
+                py4.sandbox.sandbox_url_to(ssn_path, file_name, base_url=self.url)
+            else:
+                self.log_action("sandbox_send_to - Trying to send " + ssn_path + " to sandbox as " + file_name)
+                py4.sandbox.sandbox_send_to(ssn_path, dest_file=file_name, base_url=self.url)
             self.log_action("impoprt_network_from_file - Trying to load network " + file_name)
             py4.import_network_from_file(base_url=self.url, file=file_name)
             self.log_action("Successfully imported network")
@@ -212,7 +218,7 @@ class CyImage:
             self.log_action("toggle_graphics_details")
             py4.toggle_graphics_details(base_url=self.url)
             self.log_action("export_image - exporting to sandbox " + ssn_png + " with zoom " + str(the_zoom))
-            py4.export_image(filename=ssn_png, type='PNG', zoom=the_zoom, all_graphics_details=False, overwrite_file=True, base_url=self.url)
+            py4.export_image(filename=ssn_png, type='PNG', hide_labels=True, zoom=the_zoom, all_graphics_details=False, overwrite_file=True, base_url=self.url)
             #py4.export_image(filename=image_path, type='PNG', units='pixels', height=1600, width=2000, zoom=the_zoom, base_url=self.url)
             #py4.export_image(filename=image_path, type='PNG', units='pixels', height=1600, width=2000, zoom=20, base_url=self.url)
             self.log_action("sandbox_get_from - getting sandbox image " + ssn_png + " to " + image_path)
