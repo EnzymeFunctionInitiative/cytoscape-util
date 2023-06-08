@@ -77,8 +77,8 @@ class CyImage:
         # As of 11/3/2021 there is a bug in Cytoscape (at least 3.9.0 and previous) that returns false
         # for XGMML files that are large, even though they are successfully loaded in Cytoscape.
         # For now we are not checking this.
-        #if not retval:
-        #    return False
+        if not retval:
+            return False
 
         retval = self.create_view()
         if not retval:
@@ -212,7 +212,7 @@ class CyImage:
             self.log_action("toggle_graphics_details")
             py4.toggle_graphics_details(base_url=self.url)
             self.log_action("export_image - exporting to sandbox " + ssn_png + " with zoom " + str(the_zoom))
-            py4.export_image(filename=ssn_png, type='PNG', zoom=the_zoom, all_graphics_details=False, overwrite_file=True, base_url=self.url)
+            py4.export_image(filename=ssn_png, type='PNG', hide_labels=True, zoom=the_zoom, all_graphics_details=False, overwrite_file=True, base_url=self.url)
             #py4.export_image(filename=image_path, type='PNG', units='pixels', height=1600, width=2000, zoom=the_zoom, base_url=self.url)
             #py4.export_image(filename=image_path, type='PNG', units='pixels', height=1600, width=2000, zoom=20, base_url=self.url)
             self.log_action("sandbox_get_from - getting sandbox image " + ssn_png + " to " + image_path)

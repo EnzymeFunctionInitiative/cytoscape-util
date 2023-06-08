@@ -43,14 +43,18 @@ Stage: build
         then
             args="$args --zoom $5"
         fi
-        if [ $# -gt 5 ]
+        if [ $# -gt 5 ] && [ $6 -gt 0 ]
+        then
+            args="$args --style"
+        fi
+        if [ $# -gt 6 ] && [ $7 -gt 0 ]
         then
             args="$args --verbose"
         fi
         python3 /opt/cytoscape-util/ssn2image/ssn2image.py $args
         echo "$args"
     fi
-    if [ $# -gt 6 ] && [ $6 -gt 0 ]
+    if [ $# -gt 7 ] && [ $8 -gt 0 ]
     then
         echo "Cropping image"
         /opt/cytoscape-util/misc/crop_ssn_image.pl $2 $2.crop
