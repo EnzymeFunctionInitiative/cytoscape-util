@@ -63,6 +63,9 @@ class CyImage:
         if tries >= max_tries:
             self.log_action("Too many attempts to connect")
             return False
+
+        self.log_action("Hiding panels")
+        py4.hide_all_panels(base_url=self.url)
         
         self.log_action("Good to go")
         
