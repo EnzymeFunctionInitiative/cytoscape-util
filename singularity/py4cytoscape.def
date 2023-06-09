@@ -28,7 +28,7 @@ Stage: build
         python3 /opt/cytoscape-util/ssn2image/ssn2image.py --quit --port $2
     elif [ "$1" = "usage" ] || [ $# -lt 3 ]
     then
-        echo "Usage: singularity py4cytoscape.sif ssn_path output_image_path [port host zoom verbose]"
+        echo 'Usage: singularity py4cytoscape.sif <ssn_path> <output_image_path> [<port> <host> <zoom>] [style verbose] [crop]'
     else
         args="--ssn $1 --image-base $2"
         if [ $# -gt 2 ]
@@ -43,25 +43,26 @@ Stage: build
         then
             args="$args --zoom $5"
         fi
-        if [ $# -gt 5 ] && [ $6 -gt 0 ]
+        if [ $# -gt 5 ] && [ "$6" = "style" ]
         then
             args="$args --style"
         fi
-        if [ $# -gt 6 ] && [ $7 -gt 0 ]
+        if [ $# -gt 6 ] && [ "$7" = "verbose" ]
         then
             args="$args --verbose"
         fi
         python3 /opt/cytoscape-util/ssn2image/ssn2image.py $args
-        echo "$args"
+        #echo "$args"
     fi
-    if [ $# -gt 7 ] && [ $8 -gt 0 ]
+    if [ $# -gt 7 ] && [ "$8" = "crop" ]
     then
-        echo "Cropping image"
+        #echo "Cropping image"
         /opt/cytoscape-util/misc/crop_ssn_image.pl $2 $2.crop
         mv $2 $2.bak
         mv $2.crop $2
     else
-        echo "Not cropping image"
+        :
+        #echo "Not cropping image"
     fi
 
 %test
