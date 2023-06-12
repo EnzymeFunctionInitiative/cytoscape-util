@@ -13,7 +13,7 @@ import datetime
 #from requests.exceptions import ConnectionError
 
 # Need local copy of py4cytoscape for now so we can get view_create
-lib_dir = os.path.dirname(os.path.realpath(__file__)) + "/../lib"
+lib_dir = os.path.dirname(os.path.realpath(__file__)) + "/../lib/py4cytoscape/py4cytoscape"
 sys.path.append(lib_dir)
 import py4cytoscape as py4
 
