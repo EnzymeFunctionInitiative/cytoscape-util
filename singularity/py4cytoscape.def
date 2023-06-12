@@ -16,7 +16,7 @@ Stage: build
     locale-gen en_US
     locale-gen en_US.UTF-8
     update-locale LC_ALL=en_US.UTF-8
-    pip install uuid pandas networkx requests python-igraph colorbrewer chardet decorator
+    pip install uuid pandas networkx requests python-igraph colorbrewer chardet decorator backoff colour
     #pip install py4cytoscape
     git clone --branch devel https://github.com/EnzymeFunctionInitiative/cytoscape-util.git /opt/cytoscape-util
     mkdir -p /opt/cytoscape-util/lib/py4cytoscape
@@ -58,10 +58,13 @@ Stage: build
     fi
     if [ $# -gt 7 ] && [ "$8" = "crop" ]
     then
-        #echo "Cropping image"
-        /opt/cytoscape-util/misc/crop_ssn_image.pl $2 $2.crop
-        mv $2 $2.bak
-        mv $2.crop $2
+        if [ -f "$2" ]
+        then
+            #echo "Cropping image"
+            /opt/cytoscape-util/misc/crop_ssn_image.pl $2 $2.crop
+            mv $2 $2.bak
+            mv $2.crop $2
+        fi
     else
         :
         #echo "Not cropping image"
