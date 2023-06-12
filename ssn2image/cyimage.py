@@ -13,7 +13,9 @@ import datetime
 #from requests.exceptions import ConnectionError
 
 # Need local copy of py4cytoscape for now so we can get view_create
-lib_dir = os.path.dirname(os.path.realpath(__file__)) + "/../lib"
+#lib_dir = os.path.dirname(os.path.realpath(__file__)) + "/../lib"
+#sys.path.append(lib_dir)
+lib_dir = os.path.dirname(os.path.realpath(__file__)) + "/../lib/py4cytoscape"
 sys.path.append(lib_dir)
 import py4cytoscape as py4
 
@@ -127,19 +129,19 @@ class CyImage:
     # Private
     def style(self):
         try:
-            self.log_action("Applying default styles")
-            py4.set_visual_property_default({'visualProperty': 'NODE_SHAPE', 'value': 'ELLIPSE'}, style_name="default", base_url=self.url)
-            py4.set_visual_property_default({'visualProperty': 'NODE_SIZE', 'value': '10'}, style_name="default", base_url=self.url)
+            self.log_action("Applying default styles to " + self.url)
+            #py4.set_visual_property_default({'visualProperty': 'NODE_SHAPE', 'value': 'ELLIPSE'}, style_name="default", base_url=self.url)
+            #py4.set_visual_property_default({'visualProperty': 'NODE_SIZE', 'value': '10'}, style_name="default", base_url=self.url)
             #defaults = {"NODE_SHAPE": "ELLIPSE", "NODE_SIZE": 10, 
             #node_ids = list(py4.get_table_columns(columns='name', base_url=self.url).index)
             #py4.set_node_label_bypass(node_ids, "", base_url=self.url)
             #py4.set_node_border_width_default(new_width=0, base_url=self.url)
             #py4.set_node_label_default(new_label="", base_url=self.url)
             ##py4.clear_node_property_bypass(node_ids, "NODE_LABEL", base_url=self.url)
-            #py4.set_node_shape_default(new_shape="ELLIPSE", base_url=self.url)
-            #py4.set_node_size_default(new_size=10, base_url=self.url)
+            py4.set_node_shape_default(new_shape="ELLIPSE", base_url=self.url)
+            py4.set_node_size_default(new_size=15, base_url=self.url)
             #py4.set_edge_line_width_default(new_width=1, base_url=self.url)
-            #py4.set_edge_color_default(new_color="#CCCCCC", base_url=self.url)
+            py4.set_edge_color_default(new_color="#CCCCCC", base_url=self.url)
             #py4.set_edge_line_style_default(new_line_style="SOLID", base_url=self.url)
             self.log_action("Done applying default styles")
         except py4.CyError as ce:
