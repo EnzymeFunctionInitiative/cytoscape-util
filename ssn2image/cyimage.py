@@ -21,9 +21,10 @@ import py4cytoscape as py4
 
 
 class CyImage:
-    def __init__(self, port=8888, host='127.0.0.1', verbose=False):
+    def __init__(self, port=8888, host='127.0.0.1', verbose=False, sandbox_id=0):
         self.url = 'http://' + host + ':' + str(port) + '/v1'
         self.verbose = verbose
+        self.sandbox_id = sandbox_id
 
     def log_action(self, message):
         if self.verbose:
@@ -68,6 +69,8 @@ class CyImage:
 
         self.log_action("Hiding panels")
         py4.hide_all_panels(base_url=self.url)
+
+        py4.sandbox_set(self.sandbox_id, copy_samples=False, reinitialize=True, base_url=self.url)
         
         self.log_action("Good to go")
         
