@@ -8,6 +8,7 @@ def get_arguments():
     parser.add_argument("--port", default=8888, help="Port to connect to Cytoscape (optional)")
     parser.add_argument("--zoom", default=100, help="Image export zoom")
     parser.add_argument("--host", default="127.0.0.1", help="IP address of Cytoscape host")
+    parser.add_argument("--sandbox-id", default="0", help="ID of sandbox to use")
     parser.add_argument("--verbose", action="store_true")
     parser.add_argument("--quit", action="store_true")
     parser.add_argument("--style", action="store_true")

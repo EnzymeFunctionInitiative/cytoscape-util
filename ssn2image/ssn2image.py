@@ -15,8 +15,11 @@ args = util.get_arguments()
 host = '127.0.0.1'
 if args.host:
     host = args.host
+sandbox_id = '0'
+if args.sandbox_id:
+    sandbox_id = args.sandbox_id
 
-cyimage = CyImage(verbose=args.verbose, host=host, port=args.port)
+cyimage = CyImage(verbose=args.verbose, host=host, port=args.port, sandbox_id=sandbox_id)
 is_connected = cyimage.wait_for_init()
 
 if not is_connected:
