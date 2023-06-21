@@ -10,12 +10,13 @@ def get_arguments():
     parser.add_argument("--host", default="127.0.0.1", help="IP address of Cytoscape host")
     parser.add_argument("--sandbox-id", default="0", help="ID of sandbox to use")
     parser.add_argument("--verbose", action="store_true")
-    parser.add_argument("--quit", action="store_true")
+    parser.add_argument("--quit-only", action="store_true")
     parser.add_argument("--style", action="store_true")
+    parser.add_argument("--dont-quit", action="store_true")
 
     args = parser.parse_args()
 
-    if not args.quit and (args.ssn is None or args.image_base is None):
+    if not args.quit_only and (args.ssn is None or args.image_base is None):
         parser.error("--ssn and --image-base are required args.")
     
     return args

@@ -26,7 +26,7 @@ if not is_connected:
     print("Failed to connect to Cytoscape; exceeded number of tries, or other error")
     sys.exit()
 
-if args.quit:
+if args.quit_only:
     cyimage.quit()
     sys.exit()
 
@@ -46,6 +46,7 @@ if args.zoom:
 
 cyimage.export_image(image_path=args.image_base, zoom=zoom)
 
-cyimage.quit()
+if not args.dont_quit:
+    cyimage.quit()
 
 
