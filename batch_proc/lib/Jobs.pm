@@ -28,6 +28,8 @@ sub new {
     $self->{logger} = $args{logger};
     $self->{overwrite_images} = $args{overwrite_images} // 0;
     $self->{cyto_config_home} = $args{cyto_config_home};
+    $self->{cyto_app} = $args{cyto_app};
+    $self->{image_conf} = $args{image_conf};
 
     $self->{dbh} = $self->openDb($self->{db_file});
 
@@ -38,7 +40,7 @@ sub new {
 sub addCluster {
     my $self = shift;
     my $clusterId = shift;
-    my $clusterDir = shift;
+    my $ssnFile = shift;
 
     my $dbh = $self->{dbh};
 
@@ -48,7 +50,6 @@ sub addCluster {
     my $row = $sth->fetchrow_hashref;
     if (not $row) {
         $self->{logger}->print("Adding $clusterId");
-        my $ssnFile = "$clusterDir/ssn.xgmml";
         $sql = "INSERT INTO clusters (cluster_id, ssn_path) VALUES ('$clusterId', '$ssnFile')";
         $dbh->do($sql);
         my ($numEdges, $numNodes, $fileSize) = getFileStats($ssnFile);
@@ -131,7 +132,7 @@ SQL
     $sth->execute;
     while (my $row = $sth->fetchrow_hashref) {
         my $clusterId = $row->{cluster_id};
-        my $ssnImagePath = getSsnImagePath($row->{ssn_path});
+        my $ssnImagePath = $self->getSsnImagePath($row->{ssn_path});
         if ((not $checkForMissingImages or -f $ssnImagePath) and (not $self->{overwrite_images} and -f $ssnImagePath)) {
             $self->{logger}->print("Skipping cluster_id=$clusterId because the image already exists");
             my $sql = "UPDATE cy_jobs SET slurm_id = -1, port = -1 WHERE cluster_id = '$clusterId'";
@@ -240,12 +241,11 @@ if [[ -n \${USE_SINGULARITY+x} ]]; then
     IMAGE=/igbgroup/n-z/noberg/dev/ssn2image/memspec/cytoscape.sif
     singularity run \$IMAGE $port
 else
-    module load cytoscape/3.8.2-Java-11.0.5
-    CYTOSCAPE=cytoscape.sh
-    #CYTOSCAPE=/igbgroup/n-z/noberg/dev/ssn2image/memspec/random.sh
+    CYTOSCAPE=$self->{cyto_app}
     export CHECK_ROOT_INSTANCE_RUNNING=false
     export USE_TEMP_KARAF=1
     export CYTOSCAPE_CONFIG_HOME=$self->{cyto_config_home}
+    export TEMP_KARAF_NAME="$clusterId"
     export JAVA_OPTS="-Xms${javaMem}G -Xmx${javaMem}G"
     xvfb-run -d \$CYTOSCAPE -R $port < /dev/zero
 fi
@@ -274,12 +274,18 @@ sub createRestJob {
     my $scriptFile = $self->{script_dir} . "/$jobName.sh";
     my $mem = "1";
 
-    my $outputImage = getSsnImagePath($ssnPath);
+    my $outputImage = $self->getSsnImagePath($ssnPath);
+
+    my $host = $self->{image_conf}->{host} // "localhost";
+    my $zoom = $self->{image_conf}->{zoom} // 400;
+    my $style = $self->{image_conf}->{style} ? "style" : "no_style";
+    my $verbose = $self->{image_conf}->{verbose} ? "verbose" : "no_verbose";
+    my $crop = $self->{image_conf}->{crop} ? "crop" : "no_crop";
 
     my @commands = (<<SCRIPT
 module load singularity/3.8.1
 IMAGE=$self->{py4cy_image}
-singularity run \$IMAGE $ssnPath $outputImage $port
+singularity run \$IMAGE $ssnPath $outputImage $port $host $zoom $style $verbose sandbox quit $crop
 SCRIPT
     );
     
@@ -294,8 +300,10 @@ SCRIPT
 
 
 sub getSsnImagePath {
+    my $self = shift;
     my $ssnPath = shift;
-    $ssnPath =~ s%^(.*)/ssn.xgmml$%${1}/ssn_lg.png%;
+    my $name = $self->{image_conf}->{name} // "ssn_lg";
+    $ssnPath =~ s%^(.*)/ssn.xgmml$%${1}/$name.png%;
     return $ssnPath;
 }
 
