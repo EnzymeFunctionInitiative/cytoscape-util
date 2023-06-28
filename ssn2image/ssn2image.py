@@ -27,7 +27,7 @@ if not is_connected:
     sys.exit()
 
 if args.quit_only:
-    cyimage.quit()
+    cyimage.quit_cytoscape()
     sys.exit()
 
 do_style = False
@@ -46,7 +46,9 @@ if args.zoom:
 
 cyimage.export_image(image_path=args.image_base, zoom=zoom)
 
+cyimage.finish()
+
 if not args.dont_quit:
-    cyimage.quit()
+    cyimage.quit_cytoscape()
 
 

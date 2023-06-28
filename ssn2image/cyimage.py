@@ -207,7 +207,7 @@ class CyImage:
             else:
                 self.log_action("sandbox_send_to - Trying to send " + ssn_path + " to sandbox as " + file_name)
                 py4.sandbox.sandbox_send_to(ssn_path, dest_file=file_name, base_url=self.url)
-            self.log_action("impoprt_network_from_file - Trying to load network " + file_name)
+            self.log_action("import_network_from_file - Trying to load network " + file_name)
             py4.import_network_from_file(base_url=self.url, file=file_name)
             self.log_action("Successfully imported network")
         except py4.CyError as ce:
@@ -234,7 +234,12 @@ class CyImage:
             return False
         return True
 
-    def quit(self):
+
+    def finish(self):
+        py4.sandbox_remove(self.sandbox_id, base_url=self.url)
+
+
+    def quit_cytoscape(self):
         try:
             self.log_action("command_quit - Quitting Cytoscape")
             py4.command_quit(base_url=self.url)

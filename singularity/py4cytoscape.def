@@ -58,12 +58,12 @@ Stage: build
             sandbox=`openssl rand -hex 8`
             args="$args --sandbox-id $sandbox"
         fi
-        if [ $# -gt 8 ] && [ "$9" = "dont-quit" ]
+        if [ $# -gt 8 ] && [ "$9" = "dontquit" ]
         then
             args="$args --dont-quit"
         fi
+        echo "$args"
         python3 /opt/cytoscape-util/ssn2image/ssn2image.py $args
-        #echo "$args"
     fi
     if [ $# -gt 9 ] && [ "$10" = "crop" ]
     then
