@@ -48,3 +48,10 @@
     
 3. Eventually use batch_proc to have a server that generates jobs in batches.
 
+
+# Testing
+
+To test the script outside of the singularity image:
+
+    python3 ssn2image/ssn2image.py --ssn singularity/ssn.xgmml --image-base test.png --port 1234 --zoom 400 --verbose --style --host 172.17.192.1
+
